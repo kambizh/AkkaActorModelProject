@@ -20,8 +20,8 @@ public class ManagerBehavior extends AbstractBehavior<String> {
         return newReceiveBuilder()
                 .onMessageEquals("start", () -> {
                     for (int i = 0; i < 20; i++) {
-                        ActorRef<String> worker = getContext().spawn(WorkerBehavior.create(), "worker"+i);
-                        worker.tell("start");
+                        ActorRef<WorkerBehavior.Command> worker = getContext().spawn(WorkerBehavior.create(), "worker"+i);
+                        worker.tell(new WorkerBehavior.Command("start",getContext().getSelf()));
                     }
                     return this;
                 })
