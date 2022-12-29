@@ -1,5 +1,6 @@
 package org.kambiz;
 
+import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
@@ -20,6 +21,16 @@ public class FirstSimpleBehavior extends AbstractBehavior<String> {
     @Override
     public Receive<String> createReceive() {
         return newReceiveBuilder()
+                //This is how to digest a message and create a child actor
+                .onMessageEquals("create a child", () ->{
+                    ActorRef<String> second_actor = getContext().spawn(FirstSimpleBehavior.create(), "secondActor");
+                    second_actor.tell("Child is created.");
+                    return this;
+                })
+                .onMessageEquals("Other message", () ->{
+                    System.out.println("Other message : " + getContext().getSelf().path());
+                    return this;
+                })
                 .onAnyMessage(message -> {
                     System.out.println("The received message : " + message);
                     return this;
