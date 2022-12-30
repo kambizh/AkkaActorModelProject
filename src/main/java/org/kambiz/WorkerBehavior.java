@@ -17,9 +17,9 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
 
         private static final Long serialVersionUID = 1L;
         private String message;
-        private ActorRef<String> sender;
+        private ActorRef<ManagerBehavior.CommandI> sender;
 
-        public Command(String message, ActorRef<String> sender) {
+        public Command(String message, ActorRef<ManagerBehavior.CommandI> sender) {
             this.message = message;
             this.sender = sender;
         }
@@ -28,7 +28,7 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
             return message;
         }
 
-        public ActorRef<String> getSender() {
+        public ActorRef<ManagerBehavior.CommandI> getSender() {
             return sender;
         }
     }
@@ -42,13 +42,18 @@ public class WorkerBehavior extends AbstractBehavior<WorkerBehavior.Command> {
         return Behaviors.setup(WorkerBehavior::new);
     }
 
+    private BigInteger prime;
+
     @Override
     public Receive<Command> createReceive() {
         return newReceiveBuilder()
                 .onAnyMessage(command -> {
-                    if (command.getMessage().equals("start")) {
-                        BigInteger bigInteger = new BigInteger(2000, new Random());
-                        System.out.println(bigInteger.nextProbablePrime());
+                    if (prime == null) {
+                        if (command.getMessage().equals("start")) {
+                            BigInteger bigInteger = new BigInteger(2000, new Random());
+                            prime = bigInteger.nextProbablePrime();
+                        }
+                        command.getSender().tell(new ManagerBehavior.ResultCommand(prime));
                     }
                     return this;
                 })
